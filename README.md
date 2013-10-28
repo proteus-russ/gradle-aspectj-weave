@@ -12,17 +12,17 @@ Something like this:
 buildscript {
     repositories {
         maven {
-            url "http://www.eveoh.nl/files/maven2"
+            url "https://repo.venturetech.net/artifactory/repo"
         }
     }
 
     dependencies {
-        classpath "nl.eveoh:gradle-aspectj:1.0"
+        classpath "com.i2rd:gradle-aspectj:1.0"
     }
 }
 
 project {
-    ext.aspectjVersion = '1.7.3'
+    ext.aspectjVersion = '1.7.4'
 }
 
 apply plugin: 'aspectj'
