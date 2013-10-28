@@ -31,7 +31,7 @@ project {
     ext.aspectjVersion = '1.7.4'
 }
 
-apply plugin: 'aspectj'
+apply plugin: 'aspectj-weave'
 ```
 
 Use the `aspectpath` and `ajInpath` to specify external aspects or external code to weave:
@@ -42,14 +42,8 @@ dependencies {
 }
 ```
 
-By default, `xlint: ignore` is used. Specify a different value for the `xlint` variable of the `compileAspect` or
-`compileTestAspect` task to show AspectJ warnings:
 
-```groovy
-compileAspect {
-    xlint = 'warning'
-}
-```
+
 
 License
 -------
