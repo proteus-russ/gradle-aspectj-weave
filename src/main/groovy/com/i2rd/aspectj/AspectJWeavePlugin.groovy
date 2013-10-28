@@ -37,57 +37,33 @@ class AspectJWeavePlugin implements Plugin<Project> {
             project.configurations.create('aspectpath')
         }
 
-        if (project.configurations.findByName('ajInpath') == null) {
-            project.configurations.create('ajInpath')
-        }
-
         project.tasks.create(name: 'weaveAspect', overwrite: true, description: 'Bytecode Weaves Binary Aspects', type: Ajc) {
-            /*
-            dependsOn project.configurations*.getTaskDependencyFromProjectDependency(true, "compileJava")
-
-            dependsOn project.processResources
-            sourceSet = project.sourceSets.main
-            inputs.files(sourceSet.allSource)
-            outputs.dir(sourceSet.output.classesDir)
-            aspectPath = project.configurations.aspectpath
-            ajInpath = project.configurations.ajInpath
-            */
-
             dependsOn project.configurations*.getTaskDependencyFromProjectDependency(true, "compileJava")
             dependsOn project.processResources
             sourceSet = project.sourceSets.main
-            inputs.files(sourceSet.allSource)
-            outputs.dir(sourceSet.output.classesDir)
+//            inputs.files(sourceSet.allSource)
+//            outputs.dir(sourceSet.output.classesDir)
             aspectPath = project.configurations.aspectpath
-            ajInpath = project.configurations.ajInpath
         }
-        //project.tasks.compileJava.deleteAllActions()
-        //project.tasks.compileJava.dependsOn project.tasks.compileAspect
-        project.tasks.compileJava.doLast {
-            project.tasks.weaveAspect.execute();
-        }
+        project.tasks.classes.dependsOn project.tasks.weaveAspect
+
 
         project.tasks.create(name: 'weaveTestAspect', overwrite: true, description: 'Bytecode Weaves Binary Test Aspects', type: Ajc) {
-
             dependsOn project.processTestResources, project.compileJava
+            mustRunAfter project.processTestResources
             sourceSet = project.sourceSets.test
-            inputs.files(sourceSet.allSource)
-            outputs.dir(sourceSet.output.classesDir)
+//            inputs.files(sourceSet.allSource)
+//            outputs.dir(sourceSet.output.classesDir)
             aspectPath = project.configurations.aspectpath
-            ajInpath = project.configurations.ajInpath
         }
-        //project.tasks.compileTestJava.deleteAllActions()
-        //project.tasks.compileTestJava.dependsOn project.tasks.compileTestAspect
-        project.tasks.compileTestJava.doLast {
-            project.tasks.weaveTestAspect.execute();
-        }
+        project.tasks.testClasses.dependsOn project.tasks.weaveTestAspect
+
     }
 }
 
 class Ajc extends DefaultTask {
     SourceSet sourceSet
     FileCollection aspectPath
-    FileCollection ajInpath
     String xlint = 'ignore'
 
     Ajc() {
@@ -99,23 +75,21 @@ class Ajc extends DefaultTask {
         logger.info("="*30)
         logger.info("="*30)
         logger.info("Running ajc ...")
-        logger.info("classpath: ${sourceSet.compileClasspath.asPath}")
-        logger.info("inPath $sourceSet.output.classesDir.absolutePath")
-        ant.taskdef(resource: "org/aspectj/tools/ant/taskdefs/aspectjTaskdefs.properties", classpath: project.configurations.ajtools.asPath)
-        ant.iajc(classpath: sourceSet.compileClasspath.asPath, fork: 'true', destDir: sourceSet.output.classesDir.absolutePath,
-                source: project.convention.plugins.java.sourceCompatibility,
-                target: project.convention.plugins.java.targetCompatibility,
-                inpath: ajInpath.asPath, xlint: xlint,
-                aspectPath: aspectPath.asPath, sourceRootCopyFilter: '**/*.java,**/*.aj', showWeaveInfo: 'true') {
-                inpath {
-                    pathelement(location: sourceSet.output.classesDir.absolutePath)
-                }
-//            sourceroots {
-//                sourceSet.java.srcDirs.each {
-//                    logger.info("   sourceRoot $it")
-//                    pathelement(location: it.absolutePath)
-//                }
-//            }
+        logger.info("\tclasspath:  ${sourceSet.compileClasspath.asPath}")
+        logger.info("\tinPath:     ${sourceSet.output.classesDir.absolutePath}")
+        logger.info("\taspectPath: ${aspectPath.asPath}")
+        if(sourceSet.output.classesDir.exists()) {
+            ant.taskdef(resource: "org/aspectj/tools/ant/taskdefs/aspectjTaskdefs.properties", classpath: project.configurations.ajtools.asPath)
+            ant.iajc(classpath: sourceSet.compileClasspath.asPath, fork: 'true', destDir: sourceSet.output.classesDir.absolutePath,
+                    source: project.convention.plugins.java.sourceCompatibility,
+                    target: project.convention.plugins.java.targetCompatibility,
+                    xlint: xlint,
+                    aspectPath: aspectPath.asPath, sourceRootCopyFilter: '**/*.java,**/*.aj', showWeaveInfo: 'true') {
+                    inpath {
+                        pathelement(location: sourceSet.output.classesDir.absolutePath)
+                    }
+
+            }
         }
     }
 }
