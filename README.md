@@ -2,7 +2,10 @@ Gradle AspectJ Weave plugin
 ===========================
 
 This is a slightly modified version of https://github.com/eveoh/gradle-aspectj for testing of bytecode 
-weaving on some projects that use Java annotation processors as well as having a functional repo.
+weaving on some projects that use Java annotation processors as well as having a functional repo. Because 
+of this we needed to change the name of the plugin to avoid conflicts. If it works out, we will try
+to push changes upstream so that the aspectj plugin supports both source and bytecode.
+
 
 Usage
 -----
