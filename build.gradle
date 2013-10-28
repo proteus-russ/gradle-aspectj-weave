@@ -1,5 +1,6 @@
 apply plugin: 'groovy'
 apply plugin: 'eclipse'
+apply plugin: 'maven'
 
 archivesBaseName = 'gradle-aspectj-weave'
 group = 'com.i2rd'
@@ -9,6 +10,10 @@ final repoURL = 'https://repo.venturetech.net/artifactory/repo'
 repositories {
     ivy { url repoURL }
     maven { url repoURL }
+    flatDir {
+        name "fileRepo"
+        dirs "repo"
+    }
 }
 
 configurations {
@@ -18,4 +23,10 @@ configurations {
 dependencies {
     compile localGroovy()
     compile gradleApi()
+}
+
+uploadArchives {
+    repositories {
+        add project.repositories.fileRepo
+    }
 }

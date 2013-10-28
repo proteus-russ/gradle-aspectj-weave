@@ -52,8 +52,8 @@ class AspectJWeavePlugin implements Plugin<Project> {
             aspectPath = project.configurations.aspectpath
             ajInpath = project.configurations.ajInpath
             */
-            dependsOn project.configurations*.getTaskDependencyFromProjectDependency(true, "compileJava")
 
+            dependsOn project.configurations*.getTaskDependencyFromProjectDependency(true, "compileJava")
             dependsOn project.processResources
             sourceSet = project.sourceSets.main
             inputs.files(sourceSet.allSource)
@@ -63,9 +63,12 @@ class AspectJWeavePlugin implements Plugin<Project> {
         }
         //project.tasks.compileJava.deleteAllActions()
         //project.tasks.compileJava.dependsOn project.tasks.compileAspect
-
+        project.tasks.compileJava.doLast {
+            project.tasks.weaveAspect.execute();
+        }
 
         project.tasks.create(name: 'weaveTestAspect', overwrite: true, description: 'Bytecode Weaves Binary Test Aspects', type: Ajc) {
+
             dependsOn project.processTestResources, project.compileJava
             sourceSet = project.sourceSets.test
             inputs.files(sourceSet.allSource)
@@ -75,6 +78,9 @@ class AspectJWeavePlugin implements Plugin<Project> {
         }
         //project.tasks.compileTestJava.deleteAllActions()
         //project.tasks.compileTestJava.dependsOn project.tasks.compileTestAspect
+        project.tasks.compileTestJava.doLast {
+            project.tasks.weaveTestAspect.execute();
+        }
     }
 }
 
@@ -89,7 +95,7 @@ class Ajc extends DefaultTask {
     }
 
     @TaskAction
-    def compile() {
+    def weave() {
         logger.info("="*30)
         logger.info("="*30)
         logger.info("Running ajc ...")
