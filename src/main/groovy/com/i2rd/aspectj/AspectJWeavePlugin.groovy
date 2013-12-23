@@ -48,7 +48,8 @@ class AspectJWeavePlugin implements Plugin<Project> {
         project.tasks.classes.dependsOn project.tasks.weaveAspect
 
 
-        project.tasks.create(name: 'weaveTestAspect', overwrite: true, description: 'Bytecode Weaves Binary Test Aspects', type: Ajc) {
+        project.tasks.create(name: 'weaveTestAspect', overwrite: true,
+                description: 'Bytecode Weaves Binary Test Aspects', type: Ajc) {
             dependsOn project.processTestResources, project.compileJava
             mustRunAfter project.processTestResources
             sourceSet = project.sourceSets.test
