@@ -30,3 +30,6 @@ uploadArchives {
         add project.repositories.fileRepo
     }
 }
+
+task wrapper(type: Wrapper) { gradleVersion = '1.10' }
+
