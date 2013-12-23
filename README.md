@@ -11,7 +11,7 @@ Usage
 -----
 
 Either build this project yourself, and include the `.jar` in your buildscript dependencies,
-or use our Maven repo. Then set `ext.aspectjVersion` to your AspectJ version and `apply plugin: 'aspectj'`.
+or use our Maven repo. Then set `ext.aspectjVersion` to your AspectJ version and `apply plugin: 'aspectj-weave'`.
 Something like this:
 
 ```groovy
