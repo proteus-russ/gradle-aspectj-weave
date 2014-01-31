@@ -75,13 +75,16 @@ class Ajc extends DefaultTask {
     def weave() {
         logger.info("="*30)
         logger.info("="*30)
-        logger.info("Running ajc ...")
+        logger.info("Running ajc 6...")
         logger.info("\tclasspath:  ${sourceSet.compileClasspath.asPath}")
         logger.info("\tinPath:     ${sourceSet.output.classesDir.absolutePath}")
         logger.info("\taspectPath: ${aspectPath.asPath}")
         if(sourceSet.output.classesDir.exists()) {
             ant.taskdef(resource: "org/aspectj/tools/ant/taskdefs/aspectjTaskdefs.properties", classpath: project.configurations.ajtools.asPath)
             ant.iajc(classpath: sourceSet.compileClasspath.asPath, fork: 'true', destDir: sourceSet.output.classesDir.absolutePath,
+                    outxml: true,
+                    referenceinfo: true,
+                    PreserveAllLocals: true,
                     source: project.convention.plugins.java.sourceCompatibility,
                     target: project.convention.plugins.java.targetCompatibility,
                     xlint: xlint,

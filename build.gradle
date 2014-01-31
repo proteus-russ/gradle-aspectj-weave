@@ -4,7 +4,7 @@ apply plugin: 'maven'
 
 archivesBaseName = 'gradle-aspectj-weave'
 group = 'com.i2rd'
-version = '1.0'
+version = '1.1'
 
 final repoURL = 'https://repo.venturetech.net/artifactory/repo'
 repositories {
