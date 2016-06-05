@@ -39,31 +39,21 @@ class AspectJWeavePlugin implements Plugin<Project> {
 
         project.tasks.create(name: 'weaveAspect', overwrite: true, description: 'Bytecode Weaves Binary Aspects', type: Ajc) {
             dependsOn project.configurations*.getTaskDependencyFromProjectDependency(true, "compileJava")
-            dependsOn project.processResources
+            mustRunAfter project.tasks.jar
             sourceSet = project.sourceSets.main
 //            inputs.files(sourceSet.allSource)
 //            outputs.dir(sourceSet.output.classesDir)
             aspectPath = project.configurations.aspectpath
+            jars = project.jar.outputs.files
         }
-        project.tasks.classes.dependsOn project.tasks.weaveAspect
-
-
-        project.tasks.create(name: 'weaveTestAspect', overwrite: true,
-                description: 'Bytecode Weaves Binary Test Aspects', type: Ajc) {
-            dependsOn project.processTestResources, project.compileJava
-            mustRunAfter project.processTestResources
-            sourceSet = project.sourceSets.test
-//            inputs.files(sourceSet.allSource)
-//            outputs.dir(sourceSet.output.classesDir)
-            aspectPath = project.configurations.aspectpath
-        }
-        project.tasks.testClasses.dependsOn project.tasks.weaveTestAspect
+        project.tasks.jar.finalizedBy project.tasks.weaveAspect
 
     }
 }
 
 class Ajc extends DefaultTask {
     SourceSet sourceSet
+    FileCollection jars
     FileCollection aspectPath
     String xlint = 'ignore'
 
@@ -75,25 +65,38 @@ class Ajc extends DefaultTask {
     def weave() {
         logger.info("="*30)
         logger.info("="*30)
-        logger.info("Running ajc 6...")
+        logger.info("Running ajc ...")
         logger.info("\tclasspath:  ${sourceSet.compileClasspath.asPath}")
-        logger.info("\tinPath:     ${sourceSet.output.classesDir.absolutePath}")
+        logger.info("\tinPath:     ${jars.toList().toString()}")
         logger.info("\taspectPath: ${aspectPath.asPath}")
-        if(sourceSet.output.classesDir.exists()) {
+        if(!sourceSet.output.classesDir.exists())
+            return
+        jars.each {file ->
+            def weavedDir = new File(file.parentFile, 'weaved')
+//            Files.copy(file.toPath(), new File(file.parentFile, 'COPY-' + file.name).toPath())
             ant.taskdef(resource: "org/aspectj/tools/ant/taskdefs/aspectjTaskdefs.properties", classpath: project.configurations.ajtools.asPath)
-            ant.iajc(classpath: sourceSet.compileClasspath.asPath, fork: 'true', destDir: sourceSet.output.classesDir.absolutePath,
+
+            ant.iajc(classpath: sourceSet.compileClasspath.asPath, fork: 'true',
                     outxml: true,
                     referenceinfo: true,
                     PreserveAllLocals: true,
+                    maxmem: '2048m',
                     source: project.convention.plugins.java.sourceCompatibility,
                     target: project.convention.plugins.java.targetCompatibility,
                     xlint: xlint,
+                    destDir: weavedDir.absolutePath,
                     aspectPath: aspectPath.asPath, sourceRootCopyFilter: '**/*.java,**/*.aj', showWeaveInfo: 'true') {
                     inpath {
-                        pathelement(location: sourceSet.output.classesDir.absolutePath)
+                        pathelement(location: file.absolutePath)
                     }
 
             }
+            ant.jar(
+                index:true,
+                basedir: weavedDir.absolutePath,
+                destfile: file.absolutePath,
+                update: true
+            )
         }
     }
 }
